@@ -39,31 +39,33 @@
         };
         console.log(data);
         $.ajax({
-            type: 'GET',
-            url: url,
-            data: data,
-            success: function (res) {
-                data = res.data;
-                if (res.code === 0) {
-                    if (action == 'news') {
-                        firstId = data[data.length - 1].id;
-                    } else {
-                        lastRow = data[data.length - 1];
-                        lastId = lastRow.id;
-                        if (firstId === 0) {
-                            firstId = data[0].id;
+                type: 'GET',
+                url: url,
+                data: data,
+                success: function (res) {
+                    data = res.data;
+                    if (res.code === 0) {
+                        if(action == 'getList'){
+                            lastRow = data[data.length - 1];
+                            lastId = lastRow.id;
                         }
+                        if (firstId === 0 || action == 'news') {
+                            firstId = data[0].id;
+
+                        }
+                        renderByAjax(data, action);
+                    } else {
+                        alert(res.msg);
                     }
-                    renderByAjax(data, action);
-                } else {
-                    alert(res.msg);
+                },
+                error: function (r) {
+                    alert('消息获取失败：' + r.errorCode);
                 }
-            },
-            error: function (r) {
-                alert('消息获取失败：' + r.errorCode);
-            },
-            dataType: 'json'
-        });
+                ,
+                dataType: 'json'
+            }
+        )
+        ;
     }
 
     function renderByAjax(data, action) {

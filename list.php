@@ -58,7 +58,7 @@ function news($startId, $limit)
     $stmt->bindValue(2, $limit, PDO::PARAM_INT);
     $stmt->execute();
     $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+    $data = array_reverse($data);
     if (empty($data)) {
         echo json(1043, '暂时没有新消息');
     } else {
