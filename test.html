@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>message test case</title>
+</head>
+<body>
+<div id="form">
+    <h3>发送消息</h3>
+    <form action="./receiver.php">
+        <span>用户：</span><input type="text" placeholder="请输入20字长度以内用户名" name="username"><br>
+        <span>消息：</span><textarea placeholder="请输入200字以内消息" rows="5" cols="50" name="message"></textarea><br>
+        <button type="submit">提 交</button>
+    </form>
+</div>
+<hr>
+<div id="list-box">
+    <h3>历史消息</h3>
+    <button id="newsBtn" onclick="loadByAjax('news')" type="button">加载最新消息</button>
+    <br><br>
+    <div id="list"></div>
+    <br><br>
+    <button id="listBtn" onclick="loadByAjax('getList')" type="button">加载更多</button>
+    <br>
+</div>
+
+<script src="./src/plugin/jquery.js"></script>
+<script>
+    firstId = 0;
+    lastId = 0;
+
+    function loadByAjax(action) {
+        url = './list.php';
+
+        data = {
+            "startId": action == 'news' ? firstId : lastId,
+            "limit": 5,
+            "action": action
+        };
+        console.log(data);
+        $.ajax({
+            type: 'GET',
+            url: url,
+            data: data,
+            success: function (res) {
+                data = res.data;
+                if (res.code === 0) {
+                    if (action == 'news') {
+                        firstId = data[data.length - 1].id;
+                    } else {
+                        lastRow = data[data.length - 1];
+                        lastId = lastRow.id;
+                        if (firstId === 0) {
+                            firstId = data[0].id;
+                        }
+                    }
+                    renderByAjax(data, action);
+                } else {
+                    alert(res.msg);
+                }
+            },
+            error: function (r) {
+                alert('消息获取失败：' + r.errorCode);
+            },
+            dataType: 'json'
+        });
+    }
+
+    function renderByAjax(data, action) {
+        html = '';
+        $.each(data, function () {
+            html += '<p>' + this.id + '.' + this.username + ' -> ' + this.message + ' [' + this.created_time + ']</p>';
+        });
+        if (action == 'news') {
+            $(html).prependTo('#list');
+        } else {
+            $(html).appendTo('#list');
+        }
+
+    }
+
+    $(document).ready(function () {
+        loadByAjax('getList');
+    });
+
+    $("form").on('submit', function () {
+        url = $(this).attr('action');
+        data = $(this).serialize();
+        $.ajax({
+            type: 'POST',
+            url: url,
+            data: data,
+            success: function (res) {
+                if (res.code === 0) {
+                    alert('消息保存成功');
+                } else {
+                    alert(res.msg);
+                }
+            },
+            error: function (r) {
+                alert('error!' + r.errorCode);
+            },
+            dataType: 'json'
+        });
+        return false;
+    });
+
+</script>
+</body>
+</html>
